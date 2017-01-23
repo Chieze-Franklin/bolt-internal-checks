@@ -1,0 +1,35 @@
+{
+  "name": "bolt-internal-checks",
+  "description": "internal module used for various types of validations",
+  "version": "1.0.0",
+  "author": {
+    "name": "Chieze Franklin",
+    "email": "chieze.franklin@gmail.com",
+    "url": "https://chieze-franklin.github.io"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Chieze-Franklin/bolt-internal-checks"
+  },
+  "dependencies": {
+    "bolt-internal-config": "*",
+    "bolt-internal-errors": "*",
+    "bolt-internal-models": "*",
+    "bolt-internal-utils": "*"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "index.js"
+  ],
+  "bugs": {
+    "url": "https://github.com/Chieze-Franklin/bolt-internal-checks/issues"
+  },
+  "maintainers": [
+    {
+      "name": "Chieze Franklin",
+      "email": "chieze.franklin@gmail.com"
+    }
+  ]
+}
