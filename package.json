@@ -1,7 +1,8 @@
 {
   "name": "bolt-internal-checks",
   "description": "internal module used for various types of validations",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "main": "checks.js",
   "author": {
     "name": "Chieze Franklin",
     "email": "chieze.franklin@gmail.com",
@@ -21,7 +22,7 @@
   "files": [
     "LICENSE",
     "README.md",
-    "index.js"
+    "checks.js"
   ],
   "bugs": {
     "url": "https://github.com/Chieze-Franklin/bolt-internal-checks/issues"

@@ -5,14 +5,13 @@ var utils = require("bolt-internal-utils");
 
 var superagent = require('superagent');
 
-//the request header to check for requests IDs
-const X_BOLT_REQ_ID = 'X-Bolt-Req-Id';
+const X_BOLT_APP_TOKEN = 'X-Bolt-App-Token';
 const X_BOLT_USER_NAME = 'X-Bolt-User-Name'
 const X_BOLT_USER_TOKEN = 'X-Bolt-User-Token';
 
-var __getAppFromReqId = function(id, request) {
-	for (var entry of request.contextToReqidMap) {
-		if (entry[1] === id) { //value === id
+var __getAppFromAppToken = function(apptkn, request) {
+	for (var entry of request.contextToAppTokenMap) {
+		if (entry[1] === apptkn) { //value === apptkn
 			return entry[0]; //return key
 		}
 	}
@@ -91,9 +90,9 @@ module.exports = {
 	},
 	//checks to be sure the app making this request is a system app
 	forSystemApp: function(request, response, next){
-		var id;
-		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_REQ_ID))) {
-			id = request.get(X_BOLT_REQ_ID);
+		var apptkn;
+		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
+			apptkn = request.get(X_BOLT_APP_TOKEN);
 		}
 		else {
 			var error = new Error(errors['110']);
@@ -101,7 +100,7 @@ module.exports = {
 			return;
 		}
 
-		var name = __getAppFromReqId(id, request);
+		var name = __getAppFromAppToken(apptkn, request);
 		if (utils.Misc.isNullOrUndefined(name)) {
 			var error = new Error(errors['113']);
 			response.end(utils.Misc.createResponse(null, error, 113));
@@ -138,11 +137,11 @@ module.exports = {
 		next(); //TODO: check if app has user's permission to reset the database or its collections (remember system apps need no permission)
 	},
 
-	//checks if this app has the right to access a database (actually a collection in the database)
-	forDbAccess: function(request, response, next) {
-		var id;
-		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_REQ_ID))) {
-			id = request.get(X_BOLT_REQ_ID);
+	//gets the app name from the request
+	getAppName: function(request, response, next){
+		var apptkn;
+		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
+			apptkn = request.get(X_BOLT_APP_TOKEN);
 		}
 		else {
 			var error = new Error(errors['110']);
@@ -150,7 +149,31 @@ module.exports = {
 			return;
 		}
 
-		var name = __getAppFromReqId(id, request);
+		var name = __getAppFromAppToken(apptkn, request);
+		if (utils.Misc.isNullOrUndefined(name)) {
+			var error = new Error(errors['113']);
+			response.end(utils.Misc.createResponse(null, error, 113));
+			return;
+		}
+		var appnm = utils.String.trim(name.toLowerCase());
+		request.appName = appnm;
+
+		next();
+	},
+
+	//checks if this app has the right to access a database (actually a collection in the database)
+	forDbAccess: function(request, response, next) {
+		var apptkn;
+		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
+			apptkn = request.get(X_BOLT_APP_TOKEN);
+		}
+		else {
+			var error = new Error(errors['110']);
+			response.end(utils.Misc.createResponse(null, error, 110));
+			return;
+		}
+
+		var name = __getAppFromAppToken(apptkn, request);
 		if (utils.Misc.isNullOrUndefined(name)) {
 			var error = new Error(errors['113']);
 			response.end(utils.Misc.createResponse(null, error, 113));
@@ -196,9 +219,9 @@ module.exports = {
 			request.db = request.body.app;
 		}
 		else {
-			var id;
-			if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_REQ_ID))) {
-				id = request.get(X_BOLT_REQ_ID);
+			var apptkn;
+			if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
+				apptkn = request.get(X_BOLT_APP_TOKEN);
 			}
 			else {
 				var error = new Error(errors['110']);
@@ -206,7 +229,7 @@ module.exports = {
 				return;
 			}
 
-			var name = __getAppFromReqId(id, request);
+			var name = __getAppFromAppToken(apptkn, request);
 			if (utils.Misc.isNullOrUndefined(name)) {
 				var error = new Error(errors['113']);
 				response.end(utils.Misc.createResponse(null, error, 113));
@@ -220,9 +243,9 @@ module.exports = {
 	},
 	//checks if this app owns the database (actually a collection in the database)
 	forDbOwner: function(request, response, next) {
-		var id;
-		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_REQ_ID))) {
-			id = request.get(X_BOLT_REQ_ID);
+		var apptkn;
+		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
+			apptkn = request.get(X_BOLT_APP_TOKEN);
 		}
 		else {
 			var error = new Error(errors['110']);
@@ -230,7 +253,7 @@ module.exports = {
 			return;
 		}
 
-		var name = __getAppFromReqId(id, request);
+		var name = __getAppFromAppToken(apptkn, request);
 		if (utils.Misc.isNullOrUndefined(name)) {
 			var error = new Error(errors['113']);
 			response.end(utils.Misc.createResponse(null, error, 113));
