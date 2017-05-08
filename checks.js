@@ -1,4 +1,3 @@
-var config = require("bolt-internal-config");
 var errors = require("bolt-internal-errors");
 var models = require("bolt-internal-models");
 var utils = require("bolt-internal-utils");
@@ -26,7 +25,7 @@ module.exports = {
 		if (!utils.Misc.isNullOrUndefined(request.body.name)) {
 			var appnm = utils.String.trim(request.body.name.toLowerCase());
 
-			var smthn = superagent.get(config.getProtocol() + '://' + config.getHost() + ':' + config.getPort() + '/api/users/@current');
+			var smthn = superagent.get(process.env.BOLT_ADDRESS + '/api/users/@current');
 			if(!utils.Misc.isNullOrUndefined(request.get(X_BOLT_USER_NAME))) smthn = smthn.set(X_BOLT_USER_NAME, request.get(X_BOLT_USER_NAME));
 			if(!utils.Misc.isNullOrUndefined(request.get(X_BOLT_USER_TOKEN))) smthn = smthn.set(X_BOLT_USER_TOKEN, request.get(X_BOLT_USER_TOKEN));
 			smthn
@@ -41,7 +40,7 @@ module.exports = {
 						var user = realResponse.body;
 
 						superagent
-							.post(config.getProtocol() + '://' + config.getHost() + ':' + config.getPort() + '/api/checks/app-right')
+							.post(process.env.BOLT_ADDRESS + '/api/checks/app-right')
 							.send({ app: appnm, user: user.name })
 							.end(function(rightError, rightResponse){
 								if (!utils.Misc.isNullOrUndefined(rightError)) {
@@ -87,6 +86,16 @@ module.exports = {
 	},
 	forAppFileRight: function(request, response, next){
 		next(); //TODO: check (app-role.files) if user has right to access this :file
+	},
+	//checks for logged-in UI user
+	forLoggedInUiUser: function(request, response, next){
+		if (!utils.Misc.isNullOrUndefined(request.user)) {
+			next();
+		}
+		else {
+			var success = encodeURIComponent(request.protocol + '://' + request.get('host') + request.originalUrl);
+			response.redirect('/login?success=' + success + '&no_query=true'); //we don't want it to add any query string
+		}
 	},
 	//checks to be sure the app making this request is a system app
 	forSystemApp: function(request, response, next){
@@ -161,7 +170,7 @@ module.exports = {
 		next();
 	},
 
-	//checks if this app has the right to access a database (actually a collection in the database)
+	//checks if this app has the right to access the collection in the database
 	forDbAccess: function(request, response, next) {
 		var apptkn;
 		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
@@ -192,7 +201,7 @@ module.exports = {
 			}
 			else {
 				//allow the owner to pass
-				if (appnm.toLowerCase() == collection.app.toLowerCase()) next();
+				if (appnm == collection.app.toLowerCase()) next();
 
 				//check if this is a guest app
 				else if (utils.Misc.isNullOrUndefined(collection.guests)) { //no guest allowed
@@ -241,7 +250,7 @@ module.exports = {
 
 		next();
 	},
-	//checks if this app owns the database (actually a collection in the database)
+	//checks if this app owns the collection in the database
 	forDbOwner: function(request, response, next) {
 		var apptkn;
 		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
@@ -272,7 +281,7 @@ module.exports = {
 			}
 			else {
 				//allow the owner to pass
-				if (appnm.toLowerCase() == collection.app.toLowerCase()) next();
+				if (appnm == collection.app.toLowerCase()) next();
 				else { //no guest allowed
 					var error = new Error(errors['704']);
 					response.end(utils.Misc.createResponse(null, error, 704));
