@@ -170,7 +170,7 @@ module.exports = {
 		next();
 	},
 
-	//checks if this app has the right to access the collection in the database
+	//checks if this app has the right to read from the collection in the database
 	forDbAccess: function(request, response, next) {
 		var apptkn;
 		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
@@ -203,19 +203,20 @@ module.exports = {
 				//allow the owner to pass
 				if (appnm == collection.app.toLowerCase()) next();
 
-				//check if this is a guest app
-				else if (utils.Misc.isNullOrUndefined(collection.guests)) { //no guest allowed
-					var error = new Error(errors['704']);
-					response.end(utils.Misc.createResponse(null, error, 704));
+				if (!utils.Misc.isNullOrUndefined(collection.tenants)) { //tenants allowed
+					if ("*" == collection.tenants) next(); //every body is allowed
+					//there is a tenant list; are u listed?
+					else if (collection.tenants.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) next();
 				}
-				else if ("*" == collection.guests) next(); //every body is allowed
-				else { //there is a guest list; are u invited?
-					if (collection.guests.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) next();
-					else {
-						var error = new Error(errors['704']);
-						response.end(utils.Misc.createResponse(null, error, 704));
-					}
+
+				if (!utils.Misc.isNullOrUndefined(collection.guests)) { //guests allowed
+					if ("*" == collection.guests) next(); //every body is allowed
+					//there is a guest list; are u invited?
+					else if (collection.guests.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) next();
 				}
+
+				var error = new Error(errors['704']);
+				response.end(utils.Misc.createResponse(null, error, 704));
 			}
 		});
 	},
@@ -250,7 +251,7 @@ module.exports = {
 
 		next();
 	},
-	//checks if this app owns the collection in the database
+	//checks if this app has the right to write to the collection in the database
 	forDbOwner: function(request, response, next) {
 		var apptkn;
 		if (!utils.Misc.isNullOrUndefined(request.get(X_BOLT_APP_TOKEN))) {
@@ -282,10 +283,17 @@ module.exports = {
 			else {
 				//allow the owner to pass
 				if (appnm == collection.app.toLowerCase()) next();
-				else { //no guest allowed
-					var error = new Error(errors['704']);
-					response.end(utils.Misc.createResponse(null, error, 704));
+
+				if (!utils.Misc.isNullOrUndefined(collection.tenants)) { //tenants allowed
+					if ("*" == collection.tenants) next(); //every body is allowed
+					//there is a tenant list; are u listed?
+					else if (collection.tenants.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) next();
 				}
+
+				//no guests allowed
+
+				var error = new Error(errors['704']);
+				response.end(utils.Misc.createResponse(null, error, 704));
 			}
 		});
 	}
