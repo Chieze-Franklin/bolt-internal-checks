@@ -201,18 +201,33 @@ module.exports = {
 			}
 			else {
 				//allow the owner to pass
-				if (appnm == collection.app.toLowerCase()) next();
+				if (appnm == collection.app.toLowerCase()) {
+					next();
+					return;
+				}
 
 				if (!utils.Misc.isNullOrUndefined(collection.tenants)) { //tenants allowed
-					if ("*" == collection.tenants) next(); //every body is allowed
+					if ("*" == collection.tenants) { //every body is allowed
+						next();
+						return;
+					}
 					//there is a tenant list; are u listed?
-					else if (collection.tenants.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) next();
+					else if (collection.tenants.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) {
+						next();
+						return;
+					}
 				}
 
 				if (!utils.Misc.isNullOrUndefined(collection.guests)) { //guests allowed
-					if ("*" == collection.guests) next(); //every body is allowed
+					if ("*" == collection.guests) { //every body is allowed
+						next();
+						return;
+					}
 					//there is a guest list; are u invited?
-					else if (collection.guests.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) next();
+					else if (collection.guests.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) {
+						next();
+						return;
+					}
 				}
 
 				var error = new Error(errors['704']);
@@ -280,14 +295,23 @@ module.exports = {
 				var errUser = new Error(errors['703']);
 				response.end(utils.Misc.createResponse(null, errUser, 703));
 			}
-			else {
+			else {console.log(appnm);console.log(collection.app);
 				//allow the owner to pass
-				if (appnm == collection.app.toLowerCase()) next();
+				if (appnm == collection.app.toLowerCase()) {
+					next();
+					return;
+				}
 
 				if (!utils.Misc.isNullOrUndefined(collection.tenants)) { //tenants allowed
-					if ("*" == collection.tenants) next(); //every body is allowed
+					if ("*" == collection.tenants) { //every body is allowed
+						next();
+						return;
+					}
 					//there is a tenant list; are u listed?
-					else if (collection.tenants.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) next();
+					else if (collection.tenants.map(function(value){ return value.toLowerCase(); }).indexOf(appnm) > -1) {
+						next();
+						return;
+					}
 				}
 
 				//no guests allowed
