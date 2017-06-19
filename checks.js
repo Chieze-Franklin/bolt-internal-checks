@@ -20,73 +20,6 @@ module.exports = {
 	forAdminRight: function(request, response, next){
 		next(); //TODO: check if user has admin privilege
 	},
-	//check if user has right to start app (dont check if it's a startup app)
-	forAppRight: function(request, response, next){
-		if (!utils.Misc.isNullOrUndefined(request.body.name)) {
-			var appnm = utils.String.trim(request.body.name.toLowerCase());
-
-			var smthn = superagent.get(process.env.BOLT_ADDRESS + '/api/users/@current');
-			if(!utils.Misc.isNullOrUndefined(request.get(X_BOLT_USER_NAME))) smthn = smthn.set(X_BOLT_USER_NAME, request.get(X_BOLT_USER_NAME));
-			if(!utils.Misc.isNullOrUndefined(request.get(X_BOLT_USER_TOKEN))) smthn = smthn.set(X_BOLT_USER_TOKEN, request.get(X_BOLT_USER_TOKEN));
-			smthn
-				.end(function(userError, userResponse) {
-					if (!utils.Misc.isNullOrUndefined(userError)) {
-						response.end(utils.Misc.createResponse(null, userError));
-						return;
-					}
-
-					var realResponse = userResponse.body;
-					if (!utils.Misc.isNullOrUndefined(realResponse.body)) {
-						var user = realResponse.body;
-
-						superagent
-							.post(process.env.BOLT_ADDRESS + '/api/checks/app-right')
-							.send({ app: appnm, user: user.name })
-							.end(function(rightError, rightResponse){
-								if (!utils.Misc.isNullOrUndefined(rightError)) {
-									response.end(utils.Misc.createResponse(null, rightError));
-									return;
-								}
-
-								var innerRealResponse = rightResponse.body;
-
-								if (!utils.Misc.isNullOrUndefined(innerRealResponse.error)) {
-									response.end(utils.Misc.createResponse(null, innerRealResponse.error, innerRealResponse.code, 
-										innerRealResponse.errorTraceId, innerRealResponse.errorUserTitle, innerRealResponse.errorUserMessage));
-									return;
-								}
-
-								var userHasRight = innerRealResponse.body;
-								if(userHasRight) {
-									next();
-								}
-								else {
-									var err4bd = new Error(errors['334']);
-									response.end(utils.Misc.createResponse(null, err4bd, 334));
-								}
-							});
-					}
-					else {
-						models.app.findOne({ name: appnm, startup: true }, function(errorApp, app){
-							if (!utils.Misc.isNullOrUndefined(app)) { //if it is a startup app, allow it to run without a current user
-								next();
-							}
-							else {
-								var err4bd = new Error(errors['334']);
-								response.end(utils.Misc.createResponse(null, err4bd, 334));
-							}
-						});
-					}
-				});
-		}
-		else {
-			var error = new Error(errors['400']);
-			response.end(utils.Misc.createResponse(null, error, 400));
-		}
-	},
-	forAppFileRight: function(request, response, next){
-		next(); //TODO: check (app-role.files) if user has right to access this :file
-	},
 	//checks for logged-in UI user
 	forLoggedInUiUser: function(request, response, next){
 		if (!utils.Misc.isNullOrUndefined(request.user)) {
@@ -137,13 +70,6 @@ module.exports = {
 				}
 			});
 		}
-	},
-
-	forUserPermToInstall: function(request, response, next){
-		next(); //TODO: check if app has user's permission to install an app (remember system apps need no permission)
-	},
-	forUserPermToReset: function(request, response, next){
-		next(); //TODO: check if app has user's permission to reset the database or its collections (remember system apps need no permission)
 	},
 
 	//gets the app name from the request
@@ -295,7 +221,7 @@ module.exports = {
 				var errUser = new Error(errors['703']);
 				response.end(utils.Misc.createResponse(null, errUser, 703));
 			}
-			else {console.log(appnm);console.log(collection.app);
+			else {
 				//allow the owner to pass
 				if (appnm == collection.app.toLowerCase()) {
 					next();
