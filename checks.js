@@ -21,7 +21,7 @@ module.exports = {
 		next(); //TODO: check if user has admin privilege
 	},
 	//checks for logged-in UI user
-	forLoggedInUiUser: function(request, response, next){console.log(request.originalUrl)
+	forLoggedInUiUser: function(request, response, next){
 		if (!utils.Misc.isNullOrUndefined(request.user) || request.originalUrl == '/error' || request.originalUrl.indexOf('/error?') == 0) {
 			next();
 		}
