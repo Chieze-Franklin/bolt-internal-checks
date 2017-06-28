@@ -20,6 +20,26 @@ module.exports = {
 	forAdminRight: function(request, response, next){
 		next(); //TODO: check if user has admin privilege
 	},
+	//checks to be sure a criterion was specified for a bulk delete operation
+	forBulkDeleteCriterion: function(request, response, next){
+		if (utils.Misc.isNullOrUndefined(request.query) || utils.Misc.isEmptyObject(request.query)) {
+			var errApp = new Error(errors['120']);
+			response.end(utils.Misc.createResponse(null, errApp, 120));
+		}
+		else {
+			next();
+		}
+	},
+	//checks to be sure a criterion was specified for a bulk update operation
+	forBulkUpdateCriterion: function(request, response, next){
+		if (utils.Misc.isNullOrUndefined(request.query) || utils.Misc.isEmptyObject(request.query)) {
+			var errApp = new Error(errors['130']);
+			response.end(utils.Misc.createResponse(null, errApp, 130));
+		}
+		else {
+			next();
+		}
+	},
 	//checks for logged-in UI user
 	forLoggedInUiUser: function(request, response, next){
 		if (!utils.Misc.isNullOrUndefined(request.user) || request.originalUrl == '/error' || request.originalUrl.indexOf('/error?') == 0) {
