@@ -22,7 +22,7 @@ module.exports = {
 	},
 	//checks to be sure a criterion was specified for a bulk delete operation
 	forBulkDeleteCriterion: function(request, response, next){
-		if (utils.Misc.isNullOrUndefined(request.query) || utils.Misc.isEmptyObject(request.query)) {
+		if (utils.Misc.isEmptyObject(request.query)) {
 			var errApp = new Error(errors['120']);
 			response.end(utils.Misc.createResponse(null, errApp, 120));
 		}
@@ -32,7 +32,7 @@ module.exports = {
 	},
 	//checks to be sure a criterion was specified for a bulk update operation
 	forBulkUpdateCriterion: function(request, response, next){
-		if (utils.Misc.isNullOrUndefined(request.query) || utils.Misc.isEmptyObject(request.query)) {
+		if (utils.Misc.isEmptyObject(request.query)) {
 			var errApp = new Error(errors['130']);
 			response.end(utils.Misc.createResponse(null, errApp, 130));
 		}
