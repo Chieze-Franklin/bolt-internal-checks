@@ -142,8 +142,8 @@ module.exports = {
 				response.end(utils.Misc.createResponse(null, collError));
 			}
 			else if(utils.Misc.isNullOrUndefined(collection)){
-				var errUser = new Error(errors['703']);
-				response.end(utils.Misc.createResponse(null, errUser, 703));
+				var errColl = new Error(errors['703']);
+				response.end(utils.Misc.createResponse(null, errColl, 703));
 			}
 			else {
 				//allow the owner to pass
@@ -210,6 +210,13 @@ module.exports = {
 			request.db = appnm;
 		}
 
+		if (request.db.indexOf('/') > -1 || request.db.indexOf('\\') > -1 || request.db.indexOf('?') > -1 || request.db.indexOf('&') > -1) {
+			//invalid characters in app name
+			var error = new Error(errors['405']);
+			response.end(utils.Misc.createResponse(null, error, 405));
+			return;
+		}
+
 		next();
 	},
 	//checks if this app has the right to write to the collection in the database
@@ -238,8 +245,8 @@ module.exports = {
 				response.end(utils.Misc.createResponse(null, collError));
 			}
 			else if(utils.Misc.isNullOrUndefined(collection)){
-				var errUser = new Error(errors['703']);
-				response.end(utils.Misc.createResponse(null, errUser, 703));
+				var errColl = new Error(errors['703']);
+				response.end(utils.Misc.createResponse(null, errColl, 703));
 			}
 			else {
 				//allow the owner to pass
