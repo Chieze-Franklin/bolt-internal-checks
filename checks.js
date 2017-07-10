@@ -40,6 +40,16 @@ module.exports = {
 			next();
 		}
 	},
+	//checks for logged-in user
+	forLoggedInUser: function(request, response, next){
+		if (!utils.Misc.isNullOrUndefined(request.user)) {
+			next();
+		}
+		else {
+			var error = new Error(errors['213']);
+			response.end(utils.Misc.createResponse(null, error, 213));
+		}
+	},
 	//checks for logged-in UI user
 	forLoggedInUiUser: function(request, response, next){
 		if (!utils.Misc.isNullOrUndefined(request.user) || request.originalUrl == '/error' || request.originalUrl.indexOf('/error?') == 0) {
