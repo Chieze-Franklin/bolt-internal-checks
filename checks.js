@@ -9,7 +9,7 @@ const X_BOLT_USER_NAME = 'X-Bolt-User-Name'
 const X_BOLT_USER_TOKEN = 'X-Bolt-User-Token';
 
 var __getAppFromAppToken = function(apptkn, request) {
-	for (var entry of request.contextToAppTokenMap) {
+	for (var entry of request.bolt.contextToAppTokenMap) {
 		if (entry[1] === apptkn) { //value === apptkn
 			return entry[0]; //return key
 		}
