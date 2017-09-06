@@ -18,7 +18,54 @@ var __getAppFromAppToken = function(apptkn, request) {
 
 module.exports = {
 	forAdminRight: function(request, response, next){
-		next(); //TODO: check if user has admin privilege
+		if (!utils.Misc.isNullOrUndefined(request.user)) {
+			username = utils.String.trim(request.user.name.toLowerCase());
+
+			//get user-roles associated with the user
+			models.userRoleAssoc.find({ user: username }, function(errorUserRole, userRoles){
+				if (!utils.Misc.isNullOrUndefined(errorUserRole)) {
+					response.end(utils.Misc.createResponse(null, errorUserRole));
+				}
+				else if (!utils.Misc.isNullOrUndefined(userRoles)) {
+					var foundAdmin = false;
+					var loopThroughRoles = function(index) {
+						if (index >= userRoles.length || foundAdmin) {
+							if (foundAdmin) {
+								next();
+							}
+							else {
+								var error = new Error(errors['337']);
+								response.end(utils.Misc.createResponse(null, error, 337));
+							}
+							return;
+						}
+
+						var userRole = userRoles[index];
+
+						models.role.findOne({ name: userRole.role }, function(errorRole, role) {
+							if (!utils.Misc.isNullOrUndefined(role) && role.isAdmin) {
+								foundAdmin = true;
+								loopThroughRoles(index + 1);
+							}
+							else {
+								loopThroughRoles(index + 1);
+							}
+						});
+					}
+
+					loopThroughRoles(0);
+
+				}
+				else {
+					var error = new Error(errors['337']);
+					response.end(utils.Misc.createResponse(null, error, 337));
+				}
+			});
+		}
+		else {
+			var error = new Error(errors['337']);
+			response.end(utils.Misc.createResponse(null, error, 337));
+		}
 	},
 	//checks to be sure a criterion was specified for a bulk delete operation
 	forBulkDeleteCriterion: function(request, response, next){
